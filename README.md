@@ -1,4 +1,4 @@
-# Vitaryo 🌿
+# Vitaryo 🌿 
 
 Eine private PWA, die Layo sanft an ihre Vitamine erinnert. Gebaut mit Next.js 14, Prisma + Vercel Postgres, Web Push (VAPID) und Tailwind. Installierbar auf dem iPhone via „Zum Home-Bildschirm".
 
