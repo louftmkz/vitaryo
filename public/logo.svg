@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Vitaryo">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#FEEBDB"/>
+      <stop offset="100%" stop-color="#F8C9AE"/>
+    </linearGradient>
+    <linearGradient id="v" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E07B49"/>
+      <stop offset="100%" stop-color="#C55F33"/>
+    </linearGradient>
+    <linearGradient id="leafGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#BED3B4"/>
+      <stop offset="100%" stop-color="#7BA774"/>
+    </linearGradient>
+    <radialGradient id="sheen" cx="0.3" cy="0.25" r="0.6">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Rounded background -->
+  <rect x="0" y="0" width="512" height="512" rx="120" ry="120" fill="url(#bg)"/>
+  <rect x="0" y="0" width="512" height="512" rx="120" ry="120" fill="url(#sheen)"/>
+
+  <!-- Soft inner card -->
+  <rect x="72" y="72" width="368" height="368" rx="84" ry="84" fill="#FFFFFF" opacity="0.42"/>
+
+  <!-- Big V -->
+  <g transform="translate(256 300)">
+    <path
+      d="M -118 -80 L -32 110 Q 0 140 32 110 L 118 -80 Q 128 -102 108 -112 Q 90 -120 76 -98 L 0 62 L -76 -98 Q -90 -120 -108 -112 Q -128 -102 -118 -80 Z"
+      fill="url(#v)"/>
+    <!-- inner highlight on V -->
+    <path
+      d="M -108 -92 L -98 -96 L -26 64 Q -14 80 -2 80 L -2 100 Q -22 100 -34 80 Z"
+      fill="#FFFFFF" opacity="0.18"/>
+  </g>
+
+  <!-- Leaf sprout growing out of top of V -->
+  <g transform="translate(256 170)">
+    <!-- stem -->
+    <path d="M 0 48 C 0 20, 0 -4, 0 -28" stroke="#5A8855" stroke-width="9" stroke-linecap="round" fill="none"/>
+    <!-- leaf -->
+    <path d="M 0 -20 C 46 -36, 70 -78, 12 -90 C 10 -62, -16 -42, 0 -20 Z" fill="url(#leafGrad)"/>
+    <path d="M 12 -82 C 10 -60, 2 -42, -2 -28" stroke="#5A8855" stroke-width="2" fill="none" opacity="0.6"/>
+  </g>
+
+  <!-- Small heart accent at top right -->
+  <g transform="translate(372 140)">
+    <path d="M 0 18 C -26 -2, -36 -26, -18 -32 C -10 -32, -4 -26, 0 -20 C 4 -26, 10 -32, 18 -32 C 36 -26, 26 -2, 0 18 Z"
+          fill="#F4AE87"/>
+  </g>
+</svg>

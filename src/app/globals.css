@@ -1,0 +1,41 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:wght@400;500;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --safe-top: env(safe-area-inset-top);
+  --safe-bottom: env(safe-area-inset-bottom);
+}
+
+html, body {
+  background: #FFF8F2;
+  color: #3D2E26;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: "opsz" 72, "SOFT" 100;
+}
+
+/* Pretty scrollbar-free */
+::-webkit-scrollbar { width: 0; height: 0; }
+
+/* Subtle focus ring for inputs */
+.input-bubble {
+  @apply bg-white/80 backdrop-blur rounded-2xl border border-peach-100 px-4 py-3 text-ink outline-none;
+}
+.input-bubble:focus {
+  @apply border-peach-300 ring-4 ring-peach-100/60;
+}
+
+/* iOS-like sheet bottom safe area */
+.safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 1rem); }
+.safe-top { padding-top: calc(env(safe-area-inset-top) + 0.25rem); }

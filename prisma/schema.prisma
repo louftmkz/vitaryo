@@ -1,0 +1,76 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// A vitamin / supplement the user takes.
+model Vitamin {
+  id           String   @id @default(cuid())
+  name         String
+  dose         String?  // free-form "500mg", "2 Kapseln", "1 Tropfen"
+  form         String   // "pill" | "tablet" | "capsule" | "drops" | "powder" | "liquid" | "gummy" | "spray" | "other"
+  timeOfDay    String?  // "morning" | "breakfast" | "noon" | "afternoon" | "evening" | "night" | null (if exactTime is set)
+  exactTime    String?  // "HH:mm" — takes priority over timeOfDay if set
+  intervalEvery Int     @default(1)            // "alle N ..."
+  intervalUnit  String  @default("day")        // "day" | "week" | "month"
+  startDate    DateTime @default(now())        // used to compute "alle 3 Tage" rhythm
+  leadTimeMin  Int      @default(0)            // push N Minuten vor exactTime
+  sortOrder    Int      @default(0)
+  note         String?
+  emoji        String?  // optional badge emoji e.g. "🌿"
+  color        String?  // optional accent token e.g. "peach" | "sage" | "mauve" | "butter"
+  warnings     String[] @default([])           // tags for conflicts: e.g. ["iron","calcium","zinc","caffeine"]
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  intakes      Intake[]
+}
+
+// A scheduled intake instance, generated per day per vitamin, check-off state.
+model Intake {
+  id            String   @id @default(cuid())
+  vitaminId     String
+  vitamin       Vitamin  @relation(fields: [vitaminId], references: [id], onDelete: Cascade)
+  scheduledFor  DateTime            // date/time the intake is due (UTC)
+  takenAt       DateTime?
+  snoozedUntil  DateTime?
+  notified      Boolean  @default(false)  // push already sent
+  snoozeNotified Boolean @default(false)  // snooze push sent
+  dayKey        String   // "YYYY-MM-DD" in Europe/Berlin, for fast grouping
+  createdAt     DateTime @default(now())
+
+  @@index([dayKey])
+  @@index([scheduledFor, notified])
+  @@unique([vitaminId, scheduledFor])
+}
+
+// Web Push subscription.
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+// Unlocked achievements/trophies.
+model Achievement {
+  id          String   @id @default(cuid())
+  key         String   @unique               // "streak-7", "perfect-week-2026-17", "total-100"
+  title       String
+  description String
+  icon        String                          // emoji
+  unlockedAt  DateTime @default(now())
+}
+
+// Key-value for tiny app state (timezone, last cron run, etc.).
+model AppState {
+  key   String @id
+  value String
+}
