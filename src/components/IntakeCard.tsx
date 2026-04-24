@@ -33,7 +33,7 @@ function fmtTime(iso: string) {
   return new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function IntakeCard({ intake, onChange }: { intake: Intake; onChange: () => void }) {
+export default function IntakeCard({ intake, onChange, allowSnooze = true }: { intake: Intake; onChange: () => void; allowSnooze?: boolean }) {
   const [checked, setChecked] = useState(!!intake.takenAt);
   const [busy, setBusy] = useState(false);
   const [pop, setPop] = useState(false);
@@ -105,7 +105,7 @@ export default function IntakeCard({ intake, onChange }: { intake: Intake; onCha
         )}
       </div>
 
-      {!checked && (
+      {!checked && allowSnooze && (
         <button
           onClick={(e) => { e.stopPropagation(); snooze(); }}
           className="shrink-0 text-[10px] font-semibold px-2.5 py-1.5 rounded-full bg-white/70 text-ink-soft hover:bg-white"
