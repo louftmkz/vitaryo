@@ -21,9 +21,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  // Cron always forces a fresh ensure — bypass the in-memory cache so a
-  // newly-added vitamin doesn't have to wait for the cache to expire.
-  await ensureIntakesForHorizon({ force: true });
+  await ensureIntakesForHorizon();
   const now = new Date();
 
   // Window: from (now - 24h) to (now + 2h) — generous lookback.

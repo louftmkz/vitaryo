@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { FORM_LABELS_DE } from '@/lib/time';
 import { TAG_LABELS_DE } from '@/lib/conflicts';
 
@@ -33,28 +33,12 @@ function fmtTime(iso: string) {
   return new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
 }
 
-export default function IntakeCard({
-  intake,
-  onChange,
-  onOptimisticChange,
-  allowSnooze = true,
-}: {
-  intake: Intake;
-  onChange: () => void;
-  onOptimisticChange?: (id: string, taken: boolean) => void;
-  allowSnooze?: boolean;
-}) {
+export default function IntakeCard({ intake, onChange, allowSnooze = true }: { intake: Intake; onChange: () => void; allowSnooze?: boolean }) {
   const [checked, setChecked] = useState(!!intake.takenAt);
   const [busy, setBusy] = useState(false);
   const [pop, setPop] = useState(false);
   const v = intake.vitamin;
   const palette = COLOR_MAP[v.color || 'peach'] || COLOR_MAP.peach;
-
-  // Keep local checked state in sync when the parent reloads with new data
-  // (e.g. after navigating between days, or background refetch).
-  useEffect(() => {
-    setChecked(!!intake.takenAt);
-  }, [intake.takenAt, intake.id]);
 
   async function toggle() {
     if (busy) return;
@@ -62,23 +46,14 @@ export default function IntakeCard({
     setPop(true);
     setTimeout(() => setPop(false), 300);
     const nextChecked = !checked;
-    // Optimistic: flip the checkbox + tell the parent to update progress/streak.
     setChecked(nextChecked);
-    onOptimisticChange?.(intake.id, nextChecked);
     try {
       await fetch(`/api/intakes/${intake.id}/taken`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ toggle: true }),
       });
-      // Background refresh — but don't block the UI on it. The user's already
-      // seen their click reflected.
       onChange();
-    } catch (err) {
-      // Rollback on failure.
-      setChecked(!nextChecked);
-      onOptimisticChange?.(intake.id, !nextChecked);
-      console.error('toggle failed', err);
     } finally {
       setBusy(false);
     }

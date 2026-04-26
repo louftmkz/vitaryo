@@ -106,38 +106,6 @@ export async function recomputeAchievements(): Promise<AchievementSpec[]> {
   return newlyUnlocked;
 }
 
-/**
- * Fast streak-only query for the home page. Loads 35 days of (dayKey, takenAt)
- * — minimal columns, narrow window — and walks back from today counting
- * perfect days. Today is grace-allowed (not yet complete doesn't break streak).
- */
-export async function getStreakFast(): Promise<number> {
-  const since = subDays(new Date(), 35);
-  const intakes = await prisma.intake.findMany({
-    where: { scheduledFor: { gte: since } },
-    select: { dayKey: true, takenAt: true },
-  });
-  const perDay = new Map<string, { total: number; taken: number }>();
-  for (const i of intakes) {
-    const b = perDay.get(i.dayKey) || { total: 0, taken: 0 };
-    b.total++;
-    if (i.takenAt) b.taken++;
-    perDay.set(i.dayKey, b);
-  }
-  let streak = 0;
-  const todayKey = dayKey();
-  let cursor = new Date();
-  for (let i = 0; i < 30; i++) {
-    const k = formatInTimeZone(cursor, TZ, 'yyyy-MM-dd');
-    const day = perDay.get(k);
-    if (day && day.total > 0 && day.taken === day.total) streak++;
-    else if (k === todayKey) { /* grace */ }
-    else break;
-    cursor = subDays(cursor, 1);
-  }
-  return streak;
-}
-
 export async function getStats() {
   const since = subDays(new Date(), 60);
   const intakes = await prisma.intake.findMany({
