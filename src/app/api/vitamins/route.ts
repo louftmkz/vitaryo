@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       sortOrder: Number(body.sortOrder) || 0,
     },
   });
-  await ensureIntakesForHorizon();
+  // New vitamin → bypass cache so today/tomorrow intakes are generated now.
+  await ensureIntakesForHorizon({ force: true });
   return NextResponse.json(created, { status: 201 });
 }

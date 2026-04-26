@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import IntakeCard from '@/components/IntakeCard';
 import ConflictHint from '@/components/ConflictHint';
@@ -44,6 +44,9 @@ export default function Home() {
   const [intakes, setIntakes] = useState<Intake[]>([]);
   const [loading, setLoading] = useState(true);
   const [streak, setStreak] = useState<number | null>(null);
+  // Track the most recent in-flight load so a fast nav doesn't flicker the
+  // earlier response on top of the newer one.
+  const loadSeqRef = useRef(0);
 
   const diff = keyDiffDays(viewedDay, todayLocalKey()); // 0 = today, negative = past
   const isToday = diff === 0;
@@ -52,35 +55,50 @@ export default function Home() {
   const canGoForward = !isToday;
 
   async function load(dk: string) {
+    const seq = ++loadSeqRef.current;
     setLoading(true);
     try {
       const r = await fetch(`/api/intakes/today?day=${dk}`);
       const j = await r.json();
+      if (seq !== loadSeqRef.current) return; // stale
       setIntakes(j.intakes || []);
+      if (typeof j.streak === 'number') setStreak(j.streak);
     } finally {
-      setLoading(false);
+      if (seq === loadSeqRef.current) setLoading(false);
     }
-  }
-
-  async function loadStreak() {
-    try {
-      const r = await fetch('/api/achievements');
-      const j = await r.json();
-      setStreak(j?.stats?.streak ?? 0);
-    } catch {}
   }
 
   useEffect(() => {
     load(viewedDay);
   }, [viewedDay]);
 
-  useEffect(() => {
-    loadStreak();
-  }, []);
-
   function reload() {
+    // Background refetch after a write — keep the optimistic UI in place;
+    // the response will reconcile.
     load(viewedDay);
-    loadStreak();
+  }
+
+  /**
+   * Optimistic update from a child card:
+   *  - flip the intake's takenAt locally (so progress/state are correct)
+   *  - bump or drop the streak optimistically when toggling a today entry
+   */
+  function handleOptimistic(id: string, taken: boolean) {
+    setIntakes((prev) => {
+      const updated = prev.map((i: any) =>
+        i.id === id ? { ...i, takenAt: taken ? new Date().toISOString() : null } : i,
+      );
+      // Streak adjustment, only on today, only when transitioning into/out of "all done".
+      if (isToday && streak !== null) {
+        const total = updated.length;
+        const takenNow = updated.filter((i: any) => !!i.takenAt).length;
+        const wasComplete = prev.length > 0 && prev.every((i: any) => !!i.takenAt);
+        const isCompleteNow = total > 0 && takenNow === total;
+        if (!wasComplete && isCompleteNow) setStreak(streak + 1);
+        else if (wasComplete && !isCompleteNow) setStreak(Math.max(0, streak - 1));
+      }
+      return updated;
+    });
   }
 
   const total = intakes.length;
@@ -188,7 +206,7 @@ export default function Home() {
 
       <ConflictHint intakes={intakes} />
 
-      {loading ? (
+      {loading && intakes.length === 0 ? (
         <div className="mt-4 space-y-2">
           {[1,2,3].map((i) => (
             <div key={i} className="h-16 rounded-bubble bg-white/60 animate-pulse" />
@@ -198,16 +216,16 @@ export default function Home() {
         <EmptyState isToday={isToday} />
       ) : (
         <div className="mt-3 space-y-5">
-          <Section title="Morgens" emoji="🌅" items={groups.morning} onChange={reload} allowSnooze={isToday} />
-          <Section title="Tagsüber" emoji="☀️" items={groups.midday} onChange={reload} allowSnooze={isToday} />
-          <Section title="Abends" emoji="🌙" items={groups.evening} onChange={reload} allowSnooze={isToday} />
+          <Section title="Morgens" emoji="🌅" items={groups.morning} onChange={reload} onOptimistic={handleOptimistic} allowSnooze={isToday} />
+          <Section title="Tagsüber" emoji="☀️" items={groups.midday} onChange={reload} onOptimistic={handleOptimistic} allowSnooze={isToday} />
+          <Section title="Abends" emoji="🌙" items={groups.evening} onChange={reload} onOptimistic={handleOptimistic} allowSnooze={isToday} />
         </div>
       )}
     </main>
   );
 }
 
-function Section({ title, emoji, items, onChange, allowSnooze }: { title: string; emoji: string; items: any[]; onChange: () => void; allowSnooze: boolean }) {
+function Section({ title, emoji, items, onChange, onOptimistic, allowSnooze }: { title: string; emoji: string; items: any[]; onChange: () => void; onOptimistic: (id: string, taken: boolean) => void; allowSnooze: boolean }) {
   if (items.length === 0) return null;
   return (
     <section className="animate-fade-up">
@@ -218,7 +236,7 @@ function Section({ title, emoji, items, onChange, allowSnooze }: { title: string
       </div>
       <div className="space-y-2">
         {items.map((i) => (
-          <IntakeCard key={i.id} intake={i} onChange={onChange} allowSnooze={allowSnooze} />
+          <IntakeCard key={i.id} intake={i} onChange={onChange} onOptimisticChange={onOptimistic} allowSnooze={allowSnooze} />
         ))}
       </div>
     </section>

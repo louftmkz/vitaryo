@@ -18,7 +18,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   // If switching to exactTime, clear timeOfDay (and vice-versa) — client may send both intentionally.
   if (data.exactTime) data.timeOfDay = null;
   const updated = await prisma.vitamin.update({ where: { id: params.id }, data });
-  await ensureIntakesForHorizon();
+  // Edited vitamin (timing, schedule, etc.) → bypass cache.
+  await ensureIntakesForHorizon({ force: true });
   return NextResponse.json(updated);
 }
 
