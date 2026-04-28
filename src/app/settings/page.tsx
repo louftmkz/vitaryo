@@ -106,7 +106,7 @@ export default function SettingsPage() {
       form: editing.form,
       timeOfDay: editing.useExactTime ? null : editing.timeOfDay,
       exactTime: editing.useExactTime ? editing.exactTime : null,
-      intervalEvery: editing.intervalEvery,
+      intervalEvery: Math.max(1, Number(editing.intervalEvery) || 1),
       intervalUnit: editing.intervalUnit,
       leadTimeMin: editing.leadTimeMin,
       note: editing.note,
@@ -263,7 +263,28 @@ function EditSheet({ value, onChange, onClose, onSave, onDelete }: any) {
             <div className="text-[13px] font-semibold text-ink mb-2">Wiederholung</div>
             <div className="flex items-center gap-2">
               <span className="text-sm text-ink-soft">alle</span>
-              <input type="number" min={1} max={90} className="input-bubble w-20 text-center" value={v.intervalEvery} onChange={(e)=>set('intervalEvery', Math.max(1, Number(e.target.value)||1))} />
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={2}
+                className="input-bubble w-20 text-center"
+                value={v.intervalEvery === '' ? '' : String(v.intervalEvery)}
+                onChange={(e) => {
+                  const cleaned = e.target.value.replace(/[^0-9]/g, '');
+                  if (cleaned === '') {
+                    set('intervalEvery', '' as any);
+                  } else {
+                    const n = parseInt(cleaned, 10);
+                    if (n <= 90) set('intervalEvery', n);
+                  }
+                }}
+                onBlur={() => {
+                  if (!v.intervalEvery || (v.intervalEvery as any) < 1) {
+                    set('intervalEvery', 1);
+                  }
+                }}
+              />
               <select className="input-bubble flex-1" value={v.intervalUnit} onChange={(e)=>set('intervalUnit', e.target.value)}>
                 {UNIT_OPTIONS.map(o => <option key={o.v} value={o.v}>{o.l}</option>)}
               </select>
