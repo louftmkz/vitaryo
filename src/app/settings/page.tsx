@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 
 const FORM_OPTIONS = [
@@ -70,6 +70,7 @@ const emptyForm = () => ({
 export default function SettingsPage() {
   const [vitamins, setVitamins] = useState<Vitamin[]>([]);
   const [editing, setEditing] = useState<ReturnType<typeof emptyForm> | null>(null);
+  const customEmojiRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     const r = await fetch('/api/vitamins');
@@ -209,8 +210,44 @@ function EditSheet({ value, onChange, onClose, onSave, onDelete }: any) {
             <label className="text-xs font-semibold text-ink-soft">Emoji</label>
             <div className="mt-1 flex flex-wrap gap-1.5">
               {EMOJI_OPTIONS.map(e => (
-                <button key={e} onClick={()=>set('emoji', e)} className={`w-10 h-10 rounded-2xl text-lg ${v.emoji===e ? 'bg-peach-200' : 'bg-white/70'}`}>{e}</button>
+                <button key={e} type="button" onClick={()=>set('emoji', e)} className={`w-10 h-10 rounded-2xl text-lg ${v.emoji===e ? 'bg-peach-200' : 'bg-white/70'}`}>{e}</button>
               ))}
+              {(() => {
+                const customEmoji = v.emoji && !EMOJI_OPTIONS.includes(v.emoji) ? v.emoji : null;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => customEmojiRef.current?.focus()}
+                    aria-label="Eigenes Emoji wählen"
+                    className={`w-10 h-10 rounded-2xl text-lg flex items-center justify-center ${
+                      customEmoji
+                        ? 'bg-peach-200'
+                        : 'bg-white/40 text-ink-mute border border-dashed border-peach-200'
+                    }`}
+                  >
+                    {customEmoji || '+'}
+                  </button>
+                );
+              })()}
+              <input
+                ref={customEmojiRef}
+                type="text"
+                aria-hidden="true"
+                tabIndex={-1}
+                className="absolute opacity-0 pointer-events-none w-0 h-0"
+                onChange={(e) => {
+                  const text = e.target.value;
+                  if (!text) return;
+                  // Take the last grapheme — handles regular emoji as a
+                  // single code point. Compound emoji (skin tones, ZWJ
+                  // sequences) keep only the last unit, which is fine for
+                  // the simple "pick one" use case.
+                  const last = [...text].pop();
+                  if (last) set('emoji', last);
+                  e.target.value = '';
+                  customEmojiRef.current?.blur();
+                }}
+              />
             </div>
           </div>
 
