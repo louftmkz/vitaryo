@@ -297,7 +297,7 @@ function EditSheet({ value, onChange, onClose, onSave, onDelete }: any) {
             <div className="flex gap-2">
               {[0,5,10,15,30].map(n => (
                 <button key={n} onClick={()=>set('leadTimeMin', n)}
-                  className={`flex-1 py-2 rounded-full text-sm font-semibold ${v.leadTimeMin===n ? 'bg-peach-300 text-white' : 'bg-peach-50 text-ink-soft'}`}>
+                  className={`flex-1 py-2 rounded-full text-xs font-semibold ${v.leadTimeMin===n ? 'bg-peach-300 text-white' : 'bg-peach-50 text-ink-soft'}`}>
                   {n === 0 ? 'pünktlich' : `${n} Min`}
                 </button>
               ))}
