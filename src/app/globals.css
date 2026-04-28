@@ -50,6 +50,18 @@ select.input-bubble {
 }
 select.input-bubble::-ms-expand { display: none; }
 
+/* Native time/date inputs render 2px taller than the rest of .input-bubble
+   and have an intrinsic min-width that overflows narrow modals on iOS.
+   Force them to a fixed 50px height (matching the select) and let them
+   shrink to their container. */
+input[type="time"].input-bubble,
+input[type="date"].input-bubble,
+input[type="datetime-local"].input-bubble {
+  height: 50px;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
 /* iOS-like sheet bottom safe area */
 .safe-bottom { padding-bottom: calc(env(safe-area-inset-bottom) + 1rem); }
 .safe-top { padding-top: calc(env(safe-area-inset-top) + 0.25rem); }
