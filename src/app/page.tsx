@@ -188,7 +188,7 @@ export default function Home() {
 
       <ConflictHint intakes={intakes} />
 
-      {loading ? (
+      {loading && intakes.length === 0 ? (
         <div className="mt-4 space-y-2">
           {[1,2,3].map((i) => (
             <div key={i} className="h-16 rounded-bubble bg-white/60 animate-pulse" />
