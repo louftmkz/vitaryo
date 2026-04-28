@@ -193,7 +193,7 @@ function EditSheet({ value, onChange, onClose, onSave, onDelete }: any) {
   return (
     <div className="fixed inset-0 z-50 bg-black/30 flex items-end" onClick={onClose}>
       <div className="w-full max-w-[480px] mx-auto bg-cream rounded-t-[32px] max-h-[90dvh] overflow-y-auto safe-bottom animate-fade-up" onClick={(e)=>e.stopPropagation()}>
-        <div className="sticky top-0 bg-cream/95 backdrop-blur px-4 pt-3 pb-2 flex items-center justify-between border-b border-peach-100">
+        <div className="sticky top-0 z-20 bg-cream/95 backdrop-blur px-4 pt-3 pb-2 flex items-center justify-between border-b border-peach-100">
           <button onClick={onClose} className="text-ink-soft text-sm">Abbrechen</button>
           <div className="font-display text-lg">{v.id ? 'Bearbeiten' : 'Neues Vitamin'}</div>
           <button onClick={onSave} disabled={!v.name} className="text-peach-500 font-semibold text-sm disabled:opacity-40">Speichern</button>
