@@ -50,16 +50,34 @@ select.input-bubble {
 }
 select.input-bubble::-ms-expand { display: none; }
 
-/* Native time/date inputs render 2px taller than the rest of .input-bubble
-   and have an intrinsic min-width that overflows narrow modals on iOS.
-   Force them to a fixed 50px height (matching the select) and let them
-   shrink to their container. */
+/* iOS Safari renders <input type="time"> with native styling that ignores
+   width:100% / min-width:0 and shows no visible icon, so it overflows narrow
+   modals. We strip the native appearance, lock the height to 50px (matching
+   the select), and paint a custom clock icon in the same spot as the
+   chevron — keeps desktop and mobile visually identical. The native picker
+   still opens on tap because that's separate from the visual styling. */
 input[type="time"].input-bubble,
 input[type="date"].input-bubble,
 input[type="datetime-local"].input-bubble {
+  -webkit-appearance: none;
+  appearance: none;
   height: 50px;
   min-width: 0;
   box-sizing: border-box;
+  text-align: left;
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  padding-right: 2.5rem;
+}
+input[type="time"].input-bubble {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B5A50' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpolyline points='12 6 12 12 16 14'/%3E%3C/svg%3E");
+}
+input[type="time"].input-bubble::-webkit-date-and-time-value {
+  text-align: left;
+  min-height: 1.5em;
+}
+input[type="time"].input-bubble::-webkit-calendar-picker-indicator {
+  opacity: 0;
 }
 
 /* iOS-like sheet bottom safe area */
