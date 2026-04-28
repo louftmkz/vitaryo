@@ -70,7 +70,6 @@ const emptyForm = () => ({
 export default function SettingsPage() {
   const [vitamins, setVitamins] = useState<Vitamin[]>([]);
   const [editing, setEditing] = useState<ReturnType<typeof emptyForm> | null>(null);
-  const customEmojiRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     const r = await fetch('/api/vitamins');
@@ -186,6 +185,7 @@ export default function SettingsPage() {
 
 function EditSheet({ value, onChange, onClose, onSave, onDelete }: any) {
   const v = value;
+  const customEmojiRef = useRef<HTMLInputElement>(null);
   function set(k: string, val: any) { onChange({ ...v, [k]: val }); }
   function toggleWarning(tag: string) {
     const has = v.warnings.includes(tag);
