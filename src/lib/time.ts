@@ -108,6 +108,48 @@ export function isDueOnDayKey(
 }
 
 /**
+ * Notification buckets. We send one grouped push per bucket per day to keep
+ * compute (and notification noise) low.
+ */
+export const BUCKETS = [
+  { key: 'morning', hour: 9, label: 'Morgens' },
+  { key: 'noon', hour: 13, label: 'Tagsüber' },
+  { key: 'evening', hour: 19, label: 'Abends' },
+] as const;
+
+export type BucketKey = typeof BUCKETS[number]['key'];
+
+/** Map a vitamin to its notification bucket. exactTime → hour-based, otherwise
+ * timeOfDay-based. Late-night vitamins fall into the evening bucket (a few
+ * hours of heads-up). */
+export function bucketForVitamin(v: { timeOfDay?: string | null; exactTime?: string | null }): BucketKey {
+  if (v.exactTime) {
+    const [h] = v.exactTime.split(':').map(Number);
+    if (h < 11) return 'morning';
+    if (h < 16) return 'noon';
+    return 'evening';
+  }
+  switch (v.timeOfDay) {
+    case 'morning':
+    case 'breakfast':
+      return 'morning';
+    case 'noon':
+    case 'afternoon':
+      return 'noon';
+    case 'evening':
+    case 'night':
+    default:
+      return 'evening';
+  }
+}
+
+/** Returns the bucket whose hour matches the current Berlin hour, or null. */
+export function activeBucketNow(now: Date = new Date()): typeof BUCKETS[number] | null {
+  const hour = Number(formatInTimeZone(now, TZ, 'H'));
+  return BUCKETS.find(b => b.hour === hour) || null;
+}
+
+/**
  * Compute the scheduled UTC Date for a vitamin on a given YYYY-MM-DD day in APP_TIMEZONE.
  * Uses exactTime if set, otherwise DAYPART_TIMES[timeOfDay].
  */

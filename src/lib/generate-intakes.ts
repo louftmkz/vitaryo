@@ -20,3 +20,20 @@ export async function ensureIntakesForHorizon() {
   await ensureIntakesForDayKey(todayDayKey());
   await ensureIntakesForDayKey(dayKeyOffset(1));
 }
+
+/**
+ * Cheap variant of {@link ensureIntakesForHorizon} for hot paths.
+ * If we already have at least one intake row for today's dayKey, we assume
+ * generation has run and skip the upsert loop entirely. The heavy version is
+ * still called on vitamin create/update so newly-added vitamins always get
+ * their intakes generated.
+ */
+export async function ensureIntakesForTodayFast() {
+  const dk = todayDayKey();
+  const exists = await prisma.intake.findFirst({
+    where: { dayKey: dk },
+    select: { id: true },
+  });
+  if (exists) return;
+  await ensureIntakesForDayKey(dk);
+}
